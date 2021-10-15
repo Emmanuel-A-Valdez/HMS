@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # Project apps
     "employees",
+    "rooms",
 ]
 
 MIDDLEWARE = [
