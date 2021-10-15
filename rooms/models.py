@@ -7,6 +7,9 @@ class RoomType(models.Model):
     description = models.TextField(blank=True, null=True)
     cost = models.DecimalField(max_digits=9, decimal_places=2)
 
+    def __str__(self):
+        return self.room_type
+
 
 class Room(models.Model):
     ROOM_STATUS = [
@@ -19,4 +22,7 @@ class Room(models.Model):
     room_number = models.IntegerField()
     room_floor = models.IntegerField()
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=50, choices=ROOM_STATUS, default="VACANT")
+    status = models.CharField(max_length=50, choices=ROOM_STATUS, default="Vacant")
+
+    def __str__(self):
+        return f"{self.room_type} {self.room_number}"
