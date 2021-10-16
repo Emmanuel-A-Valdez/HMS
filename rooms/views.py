@@ -1,21 +1,75 @@
-from re import A
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Room, RoomType
 from .serializers import RoomSerializer, RoomTypeSerializer
+from django.shortcuts import get_object_or_404
 
 
-class RoomTypeView(APIView):
+class RoomTypeListView(APIView):
     def get(self, request):
         room_types = RoomType.objects.all()
         serializer = RoomTypeSerializer(room_types, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def post(self, request):
+        serializer = RoomTypeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class RoomView(APIView):
+
+class RoomTypeView(APIView):
+    def get(self, request, pk):
+        room = get_object_or_404(RoomType, pk=pk)
+        serializer = RoomTypeSerializer(room)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        room = get_object_or_404(RoomType, pk=pk)
+        serializer = RoomTypeSerializer(room, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        room_type = get_object_or_404(Room, pk=pk)
+        room_type.delete()
+        return Response(
+            {"message": "Successfully deleted."}, status=status.HTTP_204_NO_CONTENT
+        )
+
+
+class RoomListView(APIView):
     def get(self, request):
         rooms = Room.objects.all()
         serializer = RoomSerializer(rooms, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = RoomSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class RoomView(APIView):
+    def get(self, request, pk):
+        room = get_object_or_404(Room, pk=pk)
+        serializer = RoomSerializer(room)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        room = get_object_or_404(Room, pk=pk)
+        serializer = RoomSerializer(room, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        room = get_object_or_404(Room, pk=pk)
+        room.delete()
+        return Response(
+            {"message": "Successfully deleted."}, status=status.HTTP_204_NO_CONTENT
+        )

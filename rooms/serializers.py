@@ -1,8 +1,9 @@
-from .models import Room, RoomType
 from rest_framework import serializers
 
+from .models import Room, RoomType
 
-class RoomTypeSerializer(serializers.ModelSerializer):
+
+class RoomTypeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = RoomType
         fields = [
@@ -10,11 +11,15 @@ class RoomTypeSerializer(serializers.ModelSerializer):
             "room_type",
             "room_img",
             "description",
-            "cost",
+            "price",
         ]
 
 
 class RoomSerializer(serializers.ModelSerializer):
+    room_type = serializers.SlugRelatedField(
+        queryset=RoomType.objects.all(), slug_field="room_type"
+    )
+
     class Meta:
         model = Room
         fields = [

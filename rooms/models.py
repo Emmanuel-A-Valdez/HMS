@@ -2,13 +2,13 @@ from django.db import models
 
 
 class RoomType(models.Model):
-    room_type = models.CharField(max_length=100)
+    room_type = models.CharField(max_length=100, unique=True)
     room_img = models.ImageField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    cost = models.DecimalField(max_digits=9, decimal_places=2)
+    price = models.DecimalField(max_digits=9, decimal_places=2)
 
     def __str__(self):
-        return self.room_type
+        return f"{self.id}:{self.room_type}"
 
 
 class Room(models.Model):
