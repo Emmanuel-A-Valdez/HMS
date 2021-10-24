@@ -8,7 +8,7 @@ class RoomType(models.Model):
     price = models.DecimalField(max_digits=9, decimal_places=2)
 
     def __str__(self):
-        return f"{self.id}:{self.room_type}"
+        return f"{self.room_type}"
 
 
 class Room(models.Model):
@@ -19,10 +19,13 @@ class Room(models.Model):
         ("REMODELING", "Remodeling"),
     ]
     room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
-    room_number = models.IntegerField()
+    room_number = models.CharField(max_length=6)
     room_floor = models.IntegerField()
     description = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=50, choices=ROOM_STATUS, default="Vacant")
+
+    class Meta:
+        ordering = ["room_number"]
 
     def __str__(self):
         return f"{self.room_type} {self.room_number}"

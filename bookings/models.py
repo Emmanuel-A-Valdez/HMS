@@ -8,8 +8,8 @@ class Booking(models.Model):
     room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     booking_date = models.DateField(auto_now_add=True)
-    check_in = models.DateTimeField()
-    check_out = models.DateTimeField()
+    check_in = models.DateField()
+    check_out = models.DateField()
 
     def __str__(self):
         return f"{self.customer.first_name} {self.customer.last_name}'s reservation."

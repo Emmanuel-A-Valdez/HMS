@@ -1,9 +1,11 @@
+from datetime import datetime
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
-
+from django.utils import timezone
+import datetime
 from .models import Booking
 from .serializers import BookingSerializer
 
@@ -15,6 +17,16 @@ class BookingListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
+        if request.data["check_in"] < str(datetime.datetime.now()).split()[0]:
+            context = {
+                "error": "Check in date must be greater or equal to today's date."
+            }
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data["check_out"] <= request.data["check_in"]:
+            context = {"error": "Check out date must be greater than check in."}
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = BookingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
