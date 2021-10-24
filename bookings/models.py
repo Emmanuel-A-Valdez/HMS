@@ -1,10 +1,10 @@
 from django.db import models
 from rooms.models import Room, RoomType
-from customers.models import Customer
+from guests.models import Guest
 
 
 class Booking(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    guest = models.ForeignKey(Guest, on_delete=models.CASCADE)
     room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     booking_date = models.DateField(auto_now_add=True)
@@ -12,4 +12,4 @@ class Booking(models.Model):
     check_out = models.DateField()
 
     def __str__(self):
-        return f"{self.customer.first_name} {self.customer.last_name}'s reservation."
+        return f"{self.guest.first_name} {self.guest.last_name}'s reservation."

@@ -3,11 +3,11 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Customer
-from .serializers import CustomerSerializer
+from .models import Guest
+from .serializers import GuestSerializer
 
 
-class CustomerListView(APIView):
+class GuestListView(APIView):
     """
     {
         "first_name": "Joe",
@@ -23,33 +23,33 @@ class CustomerListView(APIView):
     """
 
     def get(self, request):
-        customers = Customer.objects.all()
-        serializer = CustomerSerializer(customers, many=True)
+        guests = Guest.objects.all()
+        serializer = GuestSerializer(guests, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = CustomerSerializer(data=request.data)
+        serializer = GuestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CustomerView(APIView):
+class GuestView(APIView):
     def get(self, request, pk):
-        customer = get_object_or_404(Customer, pk=pk)
-        serializer = CustomerSerializer(customer)
+        guest = get_object_or_404(Guest, pk=pk)
+        serializer = GuestSerializer(guest)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
-        customer = get_object_or_404(Customer, pk=pk)
-        serializer = CustomerSerializer(customer, data=request.data)
+        guest = get_object_or_404(Guest, pk=pk)
+        serializer = GuestSerializer(guest, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
-        customer = get_object_or_404(Customer, pk=pk)
-        customer.delete()
+        guest = get_object_or_404(Guest, pk=pk)
+        guest.delete()
         return Response(
             {"message": "Successfully deleted."}, status=status.HTTP_204_NO_CONTENT
         )

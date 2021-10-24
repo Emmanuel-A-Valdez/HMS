@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
-from .models import Customer
+from .models import Guest
 
 
-class CustomerSerializer(serializers.ModelSerializer):
+class GuestSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Customer
+        model = Guest
         fields = [
             "id",
             "first_name",

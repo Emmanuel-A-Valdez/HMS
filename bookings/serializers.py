@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from rooms.models import Room, RoomType
-from customers.models import Customer
+from guests.models import Guest
 from .models import Booking
 
 
 class BookingSerializer(serializers.ModelSerializer):
-    customer = serializers.SlugRelatedField(
-        queryset=Customer.objects.all(), slug_field="first_name"
+    guest = serializers.SlugRelatedField(
+        queryset=Guest.objects.all(), slug_field="first_name"
     )
     room_type = serializers.SlugRelatedField(
         queryset=RoomType.objects.all(), slug_field="room_type"
@@ -19,7 +19,7 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = [
             "id",
-            "customer",
+            "guest",
             "room_type",
             "room",
             "booking_date",
