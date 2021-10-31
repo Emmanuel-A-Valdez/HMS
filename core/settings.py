@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # Third party apps
     "rest_framework",
     "corsheaders",
+    "debug_toolbar",
     # Project apps
     "employees",
     "rooms",
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -154,4 +156,9 @@ REST_FRAMEWORK = {
     # ],
     # "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     # "PAGE_SIZE": 5,
+}
+
+# Debug Toolbar
+INTERNAL_IPS = {
+    "127.0.0.1",
 }

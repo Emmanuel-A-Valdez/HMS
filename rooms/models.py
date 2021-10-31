@@ -28,4 +28,4 @@ class Room(models.Model):
         ordering = ["room_number"]
 
     def __str__(self):
-        return f"{self.room_type} {self.room_number}"
+        return f"{self.room_number}"

@@ -12,7 +12,7 @@ class BookingSerializer(serializers.ModelSerializer):
         queryset=RoomType.objects.all(), slug_field="room_type"
     )
     room = serializers.SlugRelatedField(
-        queryset=Room.objects.all(), slug_field="room_number"
+        queryset=Room.objects.all(), slug_field="room_number", required=False
     )
 
     class Meta:

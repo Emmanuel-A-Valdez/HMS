@@ -7,11 +7,12 @@ from django.utils import timezone
 import datetime
 from .models import Booking
 from .serializers import BookingSerializer
+from .utils import get_available_room
 
 
 class BookingListView(APIView):
     def get(self, request):
-        bookings = Booking.objects.all()
+        bookings = Booking.objects.select_related("guest", "room_type", "room")
         serializer = BookingSerializer(bookings, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -26,7 +27,14 @@ class BookingListView(APIView):
             context = {"error": "Check out date must be greater than check in."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
+        request.data["room"] = get_available_room(
+            request.data["room_type"],
+            request.data["check_in"],
+            request.data["check_out"],
+        )
+
         serializer = BookingSerializer(data=request.data)
+
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)

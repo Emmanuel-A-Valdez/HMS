@@ -43,7 +43,7 @@ class RoomTypeView(APIView):
 
 class RoomListView(APIView):
     def get(self, request):
-        rooms = Room.objects.all()
+        rooms = Room.objects.select_related("room_type")
         serializer = RoomSerializer(rooms, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
