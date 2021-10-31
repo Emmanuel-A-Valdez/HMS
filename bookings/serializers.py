@@ -6,7 +6,7 @@ from .models import Booking
 
 class BookingSerializer(serializers.ModelSerializer):
     guest = serializers.SlugRelatedField(
-        queryset=Guest.objects.all(), slug_field="first_name"
+        queryset=Guest.objects.all(), slug_field="name_slug"
     )
     room_type = serializers.SlugRelatedField(
         queryset=RoomType.objects.all(), slug_field="room_type"
