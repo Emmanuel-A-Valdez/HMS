@@ -1,8 +1,17 @@
-from django.urls import path
+from django.urls import path, re_path
 
-from .views import BookingListView, BookingView
+from .views import BookingListView, BookingView, EBookingListView, RoomAvialabilityView
 
 urlpatterns = [
     path("", BookingListView.as_view()),
+    path("online", EBookingListView.as_view()),
     path("<int:pk>/", BookingView.as_view()),
+    path(
+        "available-rooms/<str:room_type>/<str:check_in>/<str:check_out>/",
+        RoomAvialabilityView.as_view(),
+    ),
+    # re_path(
+    #     r"^available-rooms/<slug:room_type>/(?P<check_in>\d{4}-\d{2}-\d{2})/(?P<check_out>\d{4}-\d{2}-\d{2})/$",
+    #     RoomAvialabilityView.as_view(),
+    # ),
 ]

@@ -1,23 +1,69 @@
-from datetime import datetime
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.utils import timezone
-import datetime
+from rooms.models import Room, RoomType
+from rooms.serializers import RoomSerializer
+from datetime import datetime
+
 from .models import Booking
 from .serializers import BookingSerializer
-from .utils import get_available_room
+
+now = str(timezone.now()).split()[0]
+
+
+class RoomAvialabilityView(APIView):
+    def get(self, request, room_type, check_in, check_out):
+        try:
+            rm_type = RoomType.objects.filter(
+                room_type=room_type.replace("-", " ").title()
+            )[0]
+        except:
+            context = {"error": "Room type does not exist."}
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            datetime.strptime(check_in, "%Y-%m-%d")
+        except ValueError:
+            context = {"error": "Incorrect data format, should be YYYY-MM-DD"}
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            datetime.strptime(check_out, "%Y-%m-%d")
+        except ValueError:
+            context = {"error": "Incorrect data format, should be YYYY-MM-DD"}
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+
+        rooms = (
+            Room.objects.select_related("room_type")
+            .filter(room_type=rm_type)
+            .exclude(
+                Q(
+                    booking__check_in__gte=check_in,
+                    booking__check_out__lte=check_out,
+                )
+                | Q(
+                    booking__check_in__lte=check_in,
+                    booking__check_out__gte=check_in,
+                )
+                | Q(
+                    booking__check_in__lte=check_out,
+                    booking__check_out__gte=check_out,
+                )
+            )
+        )
+        serializer = RoomSerializer(rooms, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class BookingListView(APIView):
     def get(self, request):
-        bookings = Booking.objects.select_related("guest", "room_type", "room")
+        bookings = Booking.objects.select_related("guest", "room_type", "room_number")
         serializer = BookingSerializer(bookings, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        if request.data["check_in"] < str(datetime.datetime.now()).split()[0]:
+        if request.data["check_in"] < now:
             context = {
                 "error": "Check in date must be greater or equal to today's date."
             }
@@ -27,11 +73,73 @@ class BookingListView(APIView):
             context = {"error": "Check out date must be greater than check in."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
-        request.data["room"] = get_available_room(
-            request.data["room_type"],
-            request.data["check_in"],
-            request.data["check_out"],
+        room = Room.objects.filter(room_number=request.data["room_number"])[0]
+        if Booking.objects.select_related("guest", "room_type", "room_number").filter(
+            Q(room_number=room)
+            & Q(
+                check_in__gte=request.data["check_in"],
+                check_out__lte=request.data["check_out"],
+            )
+            | Q(room_number=room)
+            & Q(
+                check_in__lte=request.data["check_in"],
+                check_out__gte=request.data["check_in"],
+            )
+            | Q(room_number=room)
+            & Q(
+                check_in__lte=request.data["check_out"],
+                check_out__gte=request.data["check_out"],
+            )
+        ):
+            context = {
+                "error": "This room is unavailable during these dates. Please choose another."
+            }
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = BookingSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class EBookingListView(APIView):
+    def get(self, request):
+        bookings = Booking.objects.select_related("guest", "room_type", "room")
+        serializer = BookingSerializer(bookings, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        if request.data["check_in"] < now:
+            context = {
+                "error": "Check in date must be greater or equal to today's date."
+            }
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data["check_out"] <= request.data["check_in"]:
+            context = {"error": "Check out date must be greater than check in."}
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+
+        rm_type = RoomType.objects.filter(room_type=request.data["room_type"])[0]
+        qs = (
+            Room.objects.select_related("room_type")
+            .filter(room_type=rm_type)
+            .exclude(
+                Q(
+                    booking__check_in__gte=request.data["check_in"],
+                    booking__check_out__lte=request.data["check_out"],
+                )
+                | Q(
+                    booking__check_in__lte=request.data["check_in"],
+                    booking__check_out__gte=request.data["check_in"],
+                )
+                | Q(
+                    booking__check_in__lte=request.data["check_out"],
+                    booking__check_out__gte=request.data["check_out"],
+                )
+            )
         )
+
+        request.data["room"] = qs[0].room_number
 
         serializer = BookingSerializer(data=request.data)
 

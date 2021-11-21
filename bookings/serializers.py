@@ -11,7 +11,7 @@ class BookingSerializer(serializers.ModelSerializer):
     room_type = serializers.SlugRelatedField(
         queryset=RoomType.objects.all(), slug_field="room_type"
     )
-    room = serializers.SlugRelatedField(
+    room_number = serializers.SlugRelatedField(
         queryset=Room.objects.all(), slug_field="room_number", required=False
     )
 
@@ -21,7 +21,7 @@ class BookingSerializer(serializers.ModelSerializer):
             "id",
             "guest",
             "room_type",
-            "room",
+            "room_number",
             "booking_date",
             "check_in",
             "check_out",

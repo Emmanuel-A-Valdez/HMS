@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 class RoomTypeListView(APIView):
     def get(self, request):
         room_types = RoomType.objects.all()
+        print(type(room_types))
         serializer = RoomTypeSerializer(room_types, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
