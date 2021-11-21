@@ -23,6 +23,8 @@ class BookingSerializer(serializers.ModelSerializer):
             "room_type",
             "room_number",
             "booking_date",
+            "arrival",
+            "departure",
             "check_in",
             "check_out",
         ]

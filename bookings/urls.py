@@ -7,7 +7,7 @@ urlpatterns = [
     path("online", EBookingListView.as_view()),
     path("<int:pk>/", BookingView.as_view()),
     path(
-        "available-rooms/<str:room_type>/<str:check_in>/<str:check_out>/",
+        "available-rooms/<str:room_type>/<str:arrival>/<str:departure>/",
         RoomAvialabilityView.as_view(),
     ),
     # re_path(

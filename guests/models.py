@@ -14,7 +14,7 @@ class Guest(models.Model):
     name_slug = models.SlugField(max_length=200, unique=True, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        self.name_slug = f"{self.id} - {self.first_name} {self.last_name}"
+        self.name_slug = f"{self.first_name} {self.last_name}"
         super(Guest, self).save(*args, **kwargs)
 
     def __str__(self):

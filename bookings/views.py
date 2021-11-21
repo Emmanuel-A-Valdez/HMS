@@ -15,7 +15,7 @@ now = str(timezone.now()).split()[0]
 
 
 class RoomAvialabilityView(APIView):
-    def get(self, request, room_type, check_in, check_out):
+    def get(self, request, room_type, arrival, departure):
         try:
             rm_type = RoomType.objects.filter(
                 room_type=room_type.replace("-", " ").title()
@@ -24,12 +24,12 @@ class RoomAvialabilityView(APIView):
             context = {"error": "Room type does not exist."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
         try:
-            datetime.strptime(check_in, "%Y-%m-%d")
+            datetime.strptime(arrival, "%Y-%m-%d")
         except ValueError:
             context = {"error": "Incorrect data format, should be YYYY-MM-DD"}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
         try:
-            datetime.strptime(check_out, "%Y-%m-%d")
+            datetime.strptime(departure, "%Y-%m-%d")
         except ValueError:
             context = {"error": "Incorrect data format, should be YYYY-MM-DD"}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
@@ -39,16 +39,16 @@ class RoomAvialabilityView(APIView):
             .filter(room_type=rm_type)
             .exclude(
                 Q(
-                    booking__check_in__gte=check_in,
-                    booking__check_out__lte=check_out,
+                    booking__arrival__gte=arrival,
+                    booking__departure__lte=departure,
                 )
                 | Q(
-                    booking__check_in__lte=check_in,
-                    booking__check_out__gte=check_in,
+                    booking__arrival__lte=arrival,
+                    booking__departure__gte=arrival,
                 )
                 | Q(
-                    booking__check_in__lte=check_out,
-                    booking__check_out__gte=check_out,
+                    booking__arrival__lte=departure,
+                    booking__departure__gte=departure,
                 )
             )
         )
@@ -63,13 +63,13 @@ class BookingListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        if request.data["check_in"] < now:
+        if request.data["arrival"] < now:
             context = {
                 "error": "Check in date must be greater or equal to today's date."
             }
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
-        if request.data["check_out"] <= request.data["check_in"]:
+        if request.data["departure"] <= request.data["arrival"]:
             context = {"error": "Check out date must be greater than check in."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
@@ -77,18 +77,18 @@ class BookingListView(APIView):
         if Booking.objects.select_related("guest", "room_type", "room_number").filter(
             Q(room_number=room)
             & Q(
-                check_in__gte=request.data["check_in"],
-                check_out__lte=request.data["check_out"],
+                arrival__gte=request.data["arrival"],
+                departure__lte=request.data["departure"],
             )
             | Q(room_number=room)
             & Q(
-                check_in__lte=request.data["check_in"],
-                check_out__gte=request.data["check_in"],
+                arrival__lte=request.data["arrival"],
+                departure__gte=request.data["arrival"],
             )
             | Q(room_number=room)
             & Q(
-                check_in__lte=request.data["check_out"],
-                check_out__gte=request.data["check_out"],
+                arrival__lte=request.data["departure"],
+                departure__gte=request.data["departure"],
             )
         ):
             context = {
@@ -104,18 +104,18 @@ class BookingListView(APIView):
 
 class EBookingListView(APIView):
     def get(self, request):
-        bookings = Booking.objects.select_related("guest", "room_type", "room")
+        bookings = Booking.objects.select_related("guest", "room_type", "room_number")
         serializer = BookingSerializer(bookings, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        if request.data["check_in"] < now:
+        if request.data["arrival"] < now:
             context = {
                 "error": "Check in date must be greater or equal to today's date."
             }
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
-        if request.data["check_out"] <= request.data["check_in"]:
+        if request.data["departure"] <= request.data["arrival"]:
             context = {"error": "Check out date must be greater than check in."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
@@ -125,21 +125,21 @@ class EBookingListView(APIView):
             .filter(room_type=rm_type)
             .exclude(
                 Q(
-                    booking__check_in__gte=request.data["check_in"],
-                    booking__check_out__lte=request.data["check_out"],
+                    booking__arrival__gte=request.data["arrival"],
+                    booking__departure__lte=request.data["departure"],
                 )
                 | Q(
-                    booking__check_in__lte=request.data["check_in"],
-                    booking__check_out__gte=request.data["check_in"],
+                    booking__arrival__lte=request.data["arrival"],
+                    booking__departure__gte=request.data["arrival"],
                 )
                 | Q(
-                    booking__check_in__lte=request.data["check_out"],
-                    booking__check_out__gte=request.data["check_out"],
+                    booking__arrival__lte=request.data["departure"],
+                    booking__departure__gte=request.data["departure"],
                 )
             )
         )
 
-        request.data["room"] = qs[0].room_number
+        request.data["room_number"] = qs[0].room_number
 
         serializer = BookingSerializer(data=request.data)
 
