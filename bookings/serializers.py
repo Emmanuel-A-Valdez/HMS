@@ -29,6 +29,7 @@ class BookingSerializer(serializers.ModelSerializer):
 
 
 class CheckInCheckOutSerializer(serializers.ModelSerializer):
+    booking = BookingSerializer(read_only=True)
     # booking = serializers.SlugRelatedField(
     #     queryset=Booking.objects.all(), slug_field="id", required=False
     # )

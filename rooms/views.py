@@ -1,10 +1,11 @@
+from core.pagination import CustomPagination
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Room, RoomType
 from .serializers import RoomSerializer, RoomTypeSerializer
-from django.shortcuts import get_object_or_404
 
 
 class RoomTypeListView(APIView):
@@ -45,8 +46,11 @@ class RoomTypeView(APIView):
 class RoomListView(APIView):
     def get(self, request):
         rooms = Room.objects.select_related("room_type")
-        serializer = RoomSerializer(rooms, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = CustomPagination()
+        room_list = paginator.paginate_queryset(rooms, request)
+        serializer = RoomSerializer(room_list, many=True)
+        # return Response(serializer.data, status=status.HTTP_200_OK)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = RoomSerializer(data=request.data)

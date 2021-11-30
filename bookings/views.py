@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from core.pagination import CustomPagination
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -60,8 +61,11 @@ class RoomAvialabilityView(APIView):
 class BookingListView(APIView):
     def get(self, request):
         bookings = Booking.objects.select_related("guest", "room_type", "room_number")
-        serializer = BookingSerializer(bookings, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = CustomPagination()
+        booking_list = paginator.paginate_queryset(bookings, request)
+        serializer = BookingSerializer(booking_list, many=True)
+        # return Response(serializer.data, status=status.HTTP_200_OK)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         if request.data["arrival"] < now:
@@ -106,8 +110,11 @@ class BookingListView(APIView):
 class EBookingListView(APIView):
     def get(self, request):
         bookings = Booking.objects.select_related("guest", "room_type", "room_number")
-        serializer = BookingSerializer(bookings, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = CustomPagination()
+        booking_list = paginator.paginate_queryset(bookings, request)
+        serializer = BookingSerializer(booking_list, many=True)
+        # return Response(serializer.data, status=status.HTTP_200_OK)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         if request.data["arrival"] < now:
