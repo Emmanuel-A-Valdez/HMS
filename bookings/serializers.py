@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rooms.models import Room, RoomType
 from guests.models import Guest
-from .models import Booking
+from .models import Booking, CheckInCheckOut
 
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -25,6 +25,21 @@ class BookingSerializer(serializers.ModelSerializer):
             "booking_date",
             "arrival",
             "departure",
+        ]
+
+
+class CheckInCheckOutSerializer(serializers.ModelSerializer):
+    # booking = serializers.SlugRelatedField(
+    #     queryset=Booking.objects.all(), slug_field="id", required=False
+    # )
+
+    class Meta:
+        model = CheckInCheckOut
+        fields = [
+            "id",
+            "booking",
+            "checked_in",
             "check_in",
+            "checked_out",
             "check_out",
         ]

@@ -12,8 +12,21 @@ class Booking(models.Model):
     arrival = models.DateField()
     departure = models.DateField()
     booking_date = models.DateField(auto_now_add=True)
-    check_in = models.DateTimeField(null=True, blank=True)
-    check_out = models.DateTimeField(null=True, blank=True)
+    # check_in = models.DateTimeField(null=True, blank=True)
+    # check_out = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.guest.first_name} {self.guest.last_name}'s reservation."
+
+
+class CheckInCheckOut(models.Model):
+    booking = models.ForeignKey(
+        Booking, on_delete=models.CASCADE, null=True, blank=True
+    )
+    checked_in = models.BooleanField(null=True, blank=True, default=False)
+    check_in = models.DateTimeField(null=True, blank=True)
+    check_out = models.DateTimeField(null=True, blank=True)
+    checked_out = models.BooleanField(null=True, blank=True, default=False)
+
+    def __str__(self):
+        return f"{self.booking}"
