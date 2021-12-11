@@ -28,11 +28,10 @@ class BookingSerializer(serializers.ModelSerializer):
         ]
 
 
-class CheckInCheckOutSerializer(serializers.ModelSerializer):
-    booking = BookingSerializer(read_only=True)
-    # booking = serializers.SlugRelatedField(
-    #     queryset=Booking.objects.all(), slug_field="id", required=False
-    # )
+class CheckInSerializer(serializers.ModelSerializer):
+    booking = serializers.SlugRelatedField(
+        queryset=Booking.objects.all(), slug_field="id", required=False
+    )
 
     class Meta:
         model = CheckInCheckOut
@@ -44,3 +43,20 @@ class CheckInCheckOutSerializer(serializers.ModelSerializer):
             "checked_out",
             "check_out",
         ]
+        read_only_fields = ("checked_out", "check_out")
+
+
+class CheckOutSerializer(serializers.ModelSerializer):
+    booking = BookingSerializer(read_only=True)
+
+    class Meta:
+        model = CheckInCheckOut
+        fields = [
+            "id",
+            "booking",
+            "checked_in",
+            "check_in",
+            "checked_out",
+            "check_out",
+        ]
+        read_only_fields = ("checked_in", "check_in")

@@ -11,7 +11,7 @@ from rooms.models import Room, RoomType
 from rooms.serializers import RoomSerializer
 
 from .models import Booking, CheckInCheckOut
-from .serializers import BookingSerializer, CheckInCheckOutSerializer
+from .serializers import BookingSerializer, CheckInSerializer, CheckOutSerializer
 
 now = str(timezone.now()).split()[0]
 
@@ -179,8 +179,9 @@ class BookingView(APIView):
 
 class CheckInView(APIView):
     def get(self, request, booking):
-        check_in = CheckInCheckOut.objects.all()
-        serializer = CheckInCheckOutSerializer(check_in, many=True)
+        check_ins = CheckInCheckOut.objects.select_related("booking")
+        # booking = get_object_or_404(CheckInCheckOut, pk=booking)
+        serializer = CheckInSerializer(check_ins, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, booking):
@@ -188,21 +189,23 @@ class CheckInView(APIView):
             context = {"error": "Guest has already checked in."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
         request.data["booking"] = booking
+        print(request.data["booking"])
         request.data["check_in"] = timezone.now()
-        serializer = CheckInCheckOutSerializer(data=request.data)
+        serializer = CheckInSerializer(data=request.data)
+        print(serializer)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CheckOutView(APIView):
-    def get(self, request, pk):
-        booking = get_object_or_404(CheckInCheckOut, pk=pk)
-        serializer = CheckInCheckOutSerializer(booking)
+    def get(self, request, check_in):
+        booking = get_object_or_404(CheckInCheckOut, pk=check_in)
+        serializer = CheckOutSerializer(booking)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, pk):
-        booking = get_object_or_404(CheckInCheckOut, pk=pk)
+    def put(self, request, check_in):
+        booking = get_object_or_404(CheckInCheckOut, pk=check_in)
 
         if CheckInCheckOut.objects.filter(
             Q(booking=booking.booking) & Q(checked_out=True)
@@ -210,7 +213,7 @@ class CheckOutView(APIView):
             context = {"error": "Guest has already checked out."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
         request.data["check_out"] = timezone.now()
-        serializer = CheckInCheckOutSerializer(booking, data=request.data)
+        serializer = CheckOutSerializer(booking, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)

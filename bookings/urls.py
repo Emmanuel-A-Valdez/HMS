@@ -22,7 +22,7 @@ urlpatterns = [
         CheckInView.as_view(),
     ),
     path(
-        "check-out/<int:pk>/",
+        "check-out/<int:check_in>/",
         CheckOutView.as_view(),
     )
     # re_path(

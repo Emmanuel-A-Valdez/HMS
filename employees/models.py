@@ -10,3 +10,6 @@ class User(AbstractUser):
     password = models.CharField(max_length=255)
 
     REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return f"{self.id}"
