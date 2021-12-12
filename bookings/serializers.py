@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rooms.models import Room, RoomType
 from guests.models import Guest
-from .models import Booking, CheckInCheckOut
+from .models import Booking
 
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -25,38 +25,91 @@ class BookingSerializer(serializers.ModelSerializer):
             "booking_date",
             "arrival",
             "departure",
+            "checked_in",
+            "check_in",
+            "checked_out",
+            "check_out",
         ]
+        read_only_fields = ("checked_in", "check_in", "checked_out", "check_out")
 
 
 class CheckInSerializer(serializers.ModelSerializer):
-    booking = serializers.SlugRelatedField(
-        queryset=Booking.objects.all(), slug_field="id", required=False
+    guest = serializers.SlugRelatedField(
+        queryset=Guest.objects.all(), slug_field="name_slug"
     )
+    room_type = serializers.SlugRelatedField(
+        queryset=RoomType.objects.all(), slug_field="room_type"
+    )
+    room_number = serializers.SlugRelatedField(
+        queryset=Room.objects.all(), slug_field="room_number", required=False
+    )
+    arrival = serializers.DateField(required=False)
+    departure = serializers.DateField(required=False)
 
     class Meta:
-        model = CheckInCheckOut
+        model = Booking
         fields = [
             "id",
-            "booking",
+            "guest",
+            "room_type",
+            "room_number",
+            "booking_date",
+            "arrival",
+            "departure",
             "checked_in",
             "check_in",
             "checked_out",
             "check_out",
         ]
-        read_only_fields = ("checked_out", "check_out")
+        read_only_fields = (
+            "id",
+            "guest",
+            "room_type",
+            "room_number",
+            "booking_date",
+            "arrival",
+            "departure",
+            "checked_out",
+            "check_out",
+        )
 
 
 class CheckOutSerializer(serializers.ModelSerializer):
-    booking = BookingSerializer(read_only=True)
+    guest = serializers.SlugRelatedField(
+        queryset=Guest.objects.all(), slug_field="name_slug"
+    )
+    room_type = serializers.SlugRelatedField(
+        queryset=RoomType.objects.all(), slug_field="room_type"
+    )
+    room_number = serializers.SlugRelatedField(
+        queryset=Room.objects.all(), slug_field="room_number", required=False
+    )
+    arrival = serializers.DateField(required=False)
+    departure = serializers.DateField(required=False)
 
     class Meta:
-        model = CheckInCheckOut
+        model = Booking
         fields = [
             "id",
-            "booking",
+            "guest",
+            "room_type",
+            "room_number",
+            "booking_date",
+            "arrival",
+            "departure",
             "checked_in",
             "check_in",
             "checked_out",
             "check_out",
         ]
-        read_only_fields = ("checked_in", "check_in")
+        read_only_fields = (
+            "id",
+            "guest",
+            "room_type",
+            "room_number",
+            "booking_date",
+            "arrival",
+            "departure",
+            "checked_in",
+            "check_in",
+        )

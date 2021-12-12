@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rooms.models import Room, RoomType
 from rooms.serializers import RoomSerializer
 
-from .models import Booking, CheckInCheckOut
+from .models import Booking
 from .serializers import BookingSerializer, CheckInSerializer, CheckOutSerializer
 
 now = str(timezone.now()).split()[0]
@@ -23,17 +23,17 @@ class RoomAvialabilityView(APIView):
                 room_type=room_type.replace("-", " ").title()
             )[0]
         except:
-            context = {"error": "Room type does not exist."}
+            context = {"detail": "Room type does not exist."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
         try:
             datetime.strptime(arrival, "%Y-%m-%d")
         except ValueError:
-            context = {"error": "Incorrect data format, should be YYYY-MM-DD"}
+            context = {"detail": "Incorrect data format, should be YYYY-MM-DD"}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
         try:
             datetime.strptime(departure, "%Y-%m-%d")
         except ValueError:
-            context = {"error": "Incorrect data format, should be YYYY-MM-DD"}
+            context = {"detail": "Incorrect data format, should be YYYY-MM-DD"}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
         rooms = (
@@ -70,12 +70,12 @@ class BookingListView(APIView):
     def post(self, request):
         if request.data["arrival"] < now:
             context = {
-                "error": "Check in date must be greater or equal to today's date."
+                "detail": "Check in date must be greater or equal to today's date."
             }
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
         if request.data["departure"] <= request.data["arrival"]:
-            context = {"error": "Check out date must be greater than check in."}
+            context = {"detail": "Check out date must be greater than check in."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
         room = Room.objects.filter(room_number=request.data["room_number"])[0]
@@ -97,7 +97,7 @@ class BookingListView(APIView):
             )
         ):
             context = {
-                "error": "This room is unavailable during these dates. Please choose another."
+                "detail": "This room is unavailable during these dates. Please choose another."
             }
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
@@ -119,12 +119,12 @@ class EBookingListView(APIView):
     def post(self, request):
         if request.data["arrival"] < now:
             context = {
-                "error": "Check in date must be greater or equal to today's date."
+                "detail": "Check in date must be greater or equal to today's date."
             }
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
         if request.data["departure"] <= request.data["arrival"]:
-            context = {"error": "Check out date must be greater than check in."}
+            context = {"detail": "Check out date must be greater than check in."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
         rm_type = RoomType.objects.filter(room_type=request.data["room_type"])[0]
@@ -173,46 +173,49 @@ class BookingView(APIView):
         booking = get_object_or_404(Booking, pk=pk)
         booking.delete()
         return Response(
-            {"message": "Successfully deleted."}, status=status.HTTP_204_NO_CONTENT
+            {"detail": "Successfully deleted."}, status=status.HTTP_204_NO_CONTENT
         )
 
 
 class CheckInView(APIView):
-    def get(self, request, booking):
-        check_ins = CheckInCheckOut.objects.select_related("booking")
-        # booking = get_object_or_404(CheckInCheckOut, pk=booking)
-        serializer = CheckInSerializer(check_ins, many=True)
+    def get(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+        serializer = CheckInSerializer(booking)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request, booking):
-        if CheckInCheckOut.objects.filter(Q(booking=booking) & Q(checked_in=True)):
-            context = {"error": "Guest has already checked in."}
+    def put(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+        if request.data["checked_in"] == True and booking.checked_in == True:
+            context = {"detail": "Guest has already checked in."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
-        request.data["booking"] = booking
-        print(request.data["booking"])
-        request.data["check_in"] = timezone.now()
-        serializer = CheckInSerializer(data=request.data)
-        print(serializer)
+        if request.data["checked_in"]:
+            request.data["check_in"] = timezone.now()
+        else:
+            request.data["check_in"] = None
+        serializer = CheckInSerializer(booking, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CheckOutView(APIView):
-    def get(self, request, check_in):
-        booking = get_object_or_404(CheckInCheckOut, pk=check_in)
+    def get(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
         serializer = CheckOutSerializer(booking)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, check_in):
-        booking = get_object_or_404(CheckInCheckOut, pk=check_in)
-
-        if CheckInCheckOut.objects.filter(
-            Q(booking=booking.booking) & Q(checked_out=True)
-        ):
-            context = {"error": "Guest has already checked out."}
+    def put(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+        if request.data["checked_out"] and not request.data["checked_in"]:
+            context = {"detail": "Guest has not checked in yet."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
-        request.data["check_out"] = timezone.now()
+        elif request.data["checked_out"] and booking.checked_out:
+            context = {"detail": "Guest has already checked out."}
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+        if request.data["checked_out"]:
+            request.data["check_out"] = timezone.now()
+        else:
+            request.data["check_out"] = None
         serializer = CheckOutSerializer(booking, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()

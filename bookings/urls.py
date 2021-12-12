@@ -18,11 +18,11 @@ urlpatterns = [
         RoomAvialabilityView.as_view(),
     ),
     path(
-        "check-in/<int:booking>/",
+        "check-in/<int:pk>/",
         CheckInView.as_view(),
     ),
     path(
-        "check-out/<int:check_in>/",
+        "check-out/<int:pk>/",
         CheckOutView.as_view(),
     )
     # re_path(
