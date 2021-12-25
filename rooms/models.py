@@ -14,7 +14,7 @@ class RoomType(models.Model):
 class Room(models.Model):
     ROOM_STATUS = [
         ("VACANT", "Vacant"),
-        ("OCCUPIED", "Ocupied"),
+        ("OCCUPIED", "Occupied"),
         ("TURNDOWN", "Turndown"),
         ("REMODELING", "Remodeling"),
     ]

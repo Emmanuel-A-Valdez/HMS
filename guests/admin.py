@@ -12,6 +12,7 @@ class GuestAdmin(admin.ModelAdmin):
         "phone_num",
         "address",
         "city",
+        "state",
         "country",
         "zip_code",
     ]

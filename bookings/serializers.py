@@ -35,10 +35,10 @@ class BookingSerializer(serializers.ModelSerializer):
 
 class CheckInSerializer(serializers.ModelSerializer):
     guest = serializers.SlugRelatedField(
-        queryset=Guest.objects.all(), slug_field="name_slug"
+        queryset=Guest.objects.all(), slug_field="name_slug", required=False
     )
     room_type = serializers.SlugRelatedField(
-        queryset=RoomType.objects.all(), slug_field="room_type"
+        queryset=RoomType.objects.all(), slug_field="room_type", required=False
     )
     room_number = serializers.SlugRelatedField(
         queryset=Room.objects.all(), slug_field="room_number", required=False

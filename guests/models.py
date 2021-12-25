@@ -9,6 +9,7 @@ class Guest(models.Model):
     phone_num = models.CharField(max_length=20)
     address = models.CharField(max_length=200)
     city = models.CharField(max_length=50)
+    state = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
     zip_code = models.CharField(max_length=12)
     name_slug = models.SlugField(max_length=200, unique=True, null=True, blank=True)

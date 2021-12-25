@@ -12,6 +12,7 @@ from rooms.serializers import RoomSerializer
 
 from .models import Booking
 from .serializers import BookingSerializer, CheckInSerializer, CheckOutSerializer
+from housekeeping.models import TurnDown
 
 now = str(timezone.now()).split()[0]
 
@@ -185,13 +186,36 @@ class CheckInView(APIView):
 
     def put(self, request, pk):
         booking = get_object_or_404(Booking, pk=pk)
-        if request.data["checked_in"] == True and booking.checked_in == True:
+        room = Room.objects.get(room_number=request.data["room_number"])
+
+        if request.data["checked_in"] and room.status == "Turndown":
+            context = {
+                "detail": "Turndown service is not complete yet. Please see housekeeping."
+            }
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+        elif request.data["checked_in"] and room.status == "Occupied":
+            context = {"detail": "Room is unavailable. Please consult reservations."}
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data["checked_in"] and booking.checked_in:
             context = {"detail": "Guest has already checked in."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
         if request.data["checked_in"]:
             request.data["check_in"] = timezone.now()
         else:
             request.data["check_in"] = None
+            booking.checked_out = False
+            booking.check_out = None
+            turndown = TurnDown.objects.filter(room_number=booking.room_number)[0]
+            turndown.delete()
+
+        room.status = "Occupied"
+        room.save()
+
+        if not request.data["checked_in"] and room.status == "Occupied":
+            room.status = "Vacant"
+            room.save()
+
         serializer = CheckInSerializer(booking, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -206,7 +230,9 @@ class CheckOutView(APIView):
 
     def put(self, request, pk):
         booking = get_object_or_404(Booking, pk=pk)
-        if request.data["checked_out"] and not request.data["checked_in"]:
+        room = Room.objects.get(room_number=booking.room_number)
+
+        if request.data["checked_out"] and not booking.checked_in:
             context = {"detail": "Guest has not checked in yet."}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
         elif request.data["checked_out"] and booking.checked_out:
@@ -216,6 +242,20 @@ class CheckOutView(APIView):
             request.data["check_out"] = timezone.now()
         else:
             request.data["check_out"] = None
+
+        if request.data["checked_out"]:
+            room.status = "Turndown"
+            room.save()
+            TurnDown.objects.create(
+                room_number=booking.room_number,
+            )
+
+        if not request.data["checked_out"] and room.status == "Turndown":
+            room.status = "Occupied"
+            room.save()
+            turndown = TurnDown.objects.filter(room_number=booking.room_number)[0]
+            turndown.delete()
+
         serializer = CheckOutSerializer(booking, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
