@@ -1,5 +1,5 @@
-from django.db import models
 from bookings.models import Booking
+from django.db import models
 from orders.models import Order
 
 

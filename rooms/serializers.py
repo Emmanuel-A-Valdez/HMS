@@ -4,6 +4,8 @@ from .models import Room, RoomType
 
 
 class RoomTypeSerializer(serializers.HyperlinkedModelSerializer):
+    room_img = serializers.ImageField(required=False)
+
     class Meta:
         model = RoomType
         fields = [

@@ -11,9 +11,12 @@ from .serializers import RoomSerializer, RoomTypeSerializer
 class RoomTypeListView(APIView):
     def get(self, request):
         room_types = RoomType.objects.all()
-        print(type(room_types))
-        serializer = RoomTypeSerializer(room_types, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # serializer = RoomTypeSerializer(room_types, many=True)
+        # return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = CustomPagination()
+        room_type_list = paginator.paginate_queryset(room_types, request)
+        serializer = RoomTypeSerializer(room_type_list, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = RoomTypeSerializer(data=request.data)
@@ -24,19 +27,19 @@ class RoomTypeListView(APIView):
 
 class RoomTypeView(APIView):
     def get(self, request, pk):
-        room = get_object_or_404(RoomType, pk=pk)
-        serializer = RoomTypeSerializer(room)
+        room_type = get_object_or_404(RoomType, pk=pk)
+        serializer = RoomTypeSerializer(room_type)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
-        room = get_object_or_404(RoomType, pk=pk)
-        serializer = RoomTypeSerializer(room, data=request.data)
+        room_type = get_object_or_404(RoomType, pk=pk)
+        serializer = RoomTypeSerializer(room_type, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
-        room_type = get_object_or_404(Room, pk=pk)
+        room_type = get_object_or_404(RoomType, pk=pk)
         room_type.delete()
         return Response(
             {"message": "Successfully deleted."}, status=status.HTTP_204_NO_CONTENT
@@ -49,7 +52,6 @@ class RoomListView(APIView):
         paginator = CustomPagination()
         room_list = paginator.paginate_queryset(rooms, request)
         serializer = RoomSerializer(room_list, many=True)
-        # return Response(serializer.data, status=status.HTTP_200_OK)
         return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
