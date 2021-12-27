@@ -30,7 +30,7 @@ class BookingSerializer(serializers.ModelSerializer):
             "checked_out",
             "check_out",
         ]
-        read_only_fields = ("checked_in", "check_in", "checked_out", "check_out")
+        read_only_fields = ("id", "checked_in", "check_in", "checked_out", "check_out")
 
 
 class CheckInSerializer(serializers.ModelSerializer):

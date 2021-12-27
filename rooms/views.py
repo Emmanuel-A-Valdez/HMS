@@ -11,8 +11,6 @@ from .serializers import RoomSerializer, RoomTypeSerializer
 class RoomTypeListView(APIView):
     def get(self, request):
         room_types = RoomType.objects.all()
-        # serializer = RoomTypeSerializer(room_types, many=True)
-        # return Response(serializer.data, status=status.HTTP_200_OK)
         paginator = CustomPagination()
         room_type_list = paginator.paginate_queryset(room_types, request)
         serializer = RoomTypeSerializer(room_type_list, many=True)
@@ -42,7 +40,7 @@ class RoomTypeView(APIView):
         room_type = get_object_or_404(RoomType, pk=pk)
         room_type.delete()
         return Response(
-            {"message": "Successfully deleted."}, status=status.HTTP_204_NO_CONTENT
+            {"detail": "Successfully deleted."}, status=status.HTTP_204_NO_CONTENT
         )
 
 
@@ -78,5 +76,5 @@ class RoomView(APIView):
         room = get_object_or_404(Room, pk=pk)
         room.delete()
         return Response(
-            {"message": "Successfully deleted."}, status=status.HTTP_204_NO_CONTENT
+            {"detail": "Successfully deleted."}, status=status.HTTP_204_NO_CONTENT
         )
