@@ -11,7 +11,16 @@ from .serializers import OrderSerializer
 
 class OrderListView(APIView):
     def get(self, request):
-        orders = Order.objects.all()
+        orders = Order.objects.select_related("booking", "item")
+        paginator = CustomPagination()
+        order_list = paginator.paginate_queryset(orders, request)
+        serializer = OrderSerializer(order_list, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+class GuestOrderListView(APIView):
+    def get(self, request, booking):
+        orders = Order.objects.select_related("booking", "item").filter(booking=booking)
         paginator = CustomPagination()
         order_list = paginator.paginate_queryset(orders, request)
         serializer = OrderSerializer(order_list, many=True)

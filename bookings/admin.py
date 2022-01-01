@@ -6,6 +6,7 @@ from .models import Booking
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     fields = [
+        "booking_slug",
         "guest",
         "room_type",
         "room_number",
@@ -18,7 +19,7 @@ class BookingAdmin(admin.ModelAdmin):
     ]
 
     list_display = [
-        "guest",
+        "booking_slug",
         "pk",
         "room_type",
         "room_number",

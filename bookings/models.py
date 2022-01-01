@@ -16,6 +16,11 @@ class Booking(models.Model):
     check_in = models.DateTimeField(null=True, blank=True)
     check_out = models.DateTimeField(null=True, blank=True)
     checked_out = models.BooleanField(null=True, blank=True, default=False)
+    booking_slug = models.SlugField(max_length=200, unique=True, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.booking_slug = f"Booking reference: {self.id} - {self.guest.first_name} {self.guest.last_name}"
+        super(Booking, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.guest.first_name} {self.guest.last_name}'s reservation."

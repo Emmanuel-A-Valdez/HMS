@@ -7,6 +7,7 @@ class GuestAdmin(admin.ModelAdmin):
     fields = [
         "first_name",
         "last_name",
+        "guest_slug",
         "email",
         "country_code",
         "phone_num",
@@ -18,7 +19,7 @@ class GuestAdmin(admin.ModelAdmin):
     ]
 
     list_display = [
-        "name_slug",
+        "guest_slug",
         "pk",
         "email",
     ]

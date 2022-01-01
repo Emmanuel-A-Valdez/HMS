@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from core.pagination import CustomPagination
 
 from .models import Guest
 from .serializers import GuestSerializer
@@ -24,8 +25,10 @@ class GuestListView(APIView):
 
     def get(self, request):
         guests = Guest.objects.all()
-        serializer = GuestSerializer(guests, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = CustomPagination()
+        guest_list = paginator.paginate_queryset(guests, request)
+        serializer = GuestSerializer(guest_list, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = GuestSerializer(data=request.data)

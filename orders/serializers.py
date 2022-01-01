@@ -6,10 +6,10 @@ from items.models import Item
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    # booking = serializers.SlugRelatedField(
-    #     queryset=Booking.objects.all(),
-    #     slug_field="room_type",
-    # )
+    booking = serializers.SlugRelatedField(
+        queryset=Booking.objects.all(),
+        slug_field="booking_slug",
+    )
     item = serializers.SlugRelatedField(
         queryset=Item.objects.all(),
         slug_field="item",

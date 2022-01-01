@@ -12,10 +12,12 @@ class Guest(models.Model):
     state = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
     zip_code = models.CharField(max_length=12)
-    name_slug = models.SlugField(max_length=200, unique=True, null=True, blank=True)
+    guest_slug = models.SlugField(max_length=200, unique=True, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        self.name_slug = f"{self.first_name} {self.last_name}"
+        self.guest_slug = (
+            f"Guest reference: {self.id} - {self.first_name} {self.last_name}"
+        )
         super(Guest, self).save(*args, **kwargs)
 
     def __str__(self):
