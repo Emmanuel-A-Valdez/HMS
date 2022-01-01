@@ -20,3 +20,6 @@ class Bill(models.Model):
         max_digits=9, decimal_places=2, null=True, blank=True
     )
     status = models.CharField(max_length=50, choices=BILL_STATUS, default="OUTSTANDING")
+
+    def __str__(self):
+        return f"{self.booking} {self.grand_total}"

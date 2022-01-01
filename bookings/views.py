@@ -1,9 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
+from billing.models import Bill
 from core.pagination import CustomPagination
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from housekeeping.models import TurnDown
+from orders.models import Order
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,7 +15,6 @@ from rooms.serializers import RoomSerializer
 
 from .models import Booking
 from .serializers import BookingSerializer, CheckInSerializer, CheckOutSerializer
-from housekeeping.models import TurnDown
 
 now = str(timezone.now()).split()[0]
 
@@ -65,7 +67,6 @@ class BookingListView(APIView):
         paginator = CustomPagination()
         booking_list = paginator.paginate_queryset(bookings, request)
         serializer = BookingSerializer(booking_list, many=True)
-        # return Response(serializer.data, status=status.HTTP_200_OK)
         return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
@@ -114,7 +115,6 @@ class EBookingListView(APIView):
         paginator = CustomPagination()
         booking_list = paginator.paginate_queryset(bookings, request)
         serializer = BookingSerializer(booking_list, many=True)
-        # return Response(serializer.data, status=status.HTTP_200_OK)
         return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
@@ -240,6 +240,26 @@ class CheckOutView(APIView):
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
         if request.data["checked_out"]:
             request.data["check_out"] = timezone.now()
+
+            guest_stay = request.data["check_out"] - booking.check_in
+            if guest_stay - timedelta(days=guest_stay.days) >= timedelta(hours=2):
+                days = guest_stay.days + 1
+            else:
+                days = guest_stay.days
+            room_fees = days * room.room_type.price
+
+            orders = Order.objects.filter(booking=booking)
+            order_fees = 0
+            for order in orders:
+                order_fees += order.total
+
+            grand_total = room_fees + order_fees
+            Bill.objects.update_or_create(
+                booking=booking,
+                room_fees=room_fees,
+                order_fees=order_fees,
+                grand_total=grand_total,
+            )
         else:
             request.data["check_out"] = None
 
