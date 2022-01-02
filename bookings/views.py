@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from billing.models import Bill
 from core.pagination import CustomPagination
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from housekeeping.models import TurnDown
@@ -241,6 +241,7 @@ class CheckOutView(APIView):
         if request.data["checked_out"]:
             request.data["check_out"] = timezone.now()
 
+            # Days
             guest_stay = request.data["check_out"] - booking.check_in
             if guest_stay - timedelta(days=guest_stay.days) >= timedelta(hours=2):
                 days = guest_stay.days + 1
@@ -248,17 +249,24 @@ class CheckOutView(APIView):
                 days = guest_stay.days
             room_fees = days * room.room_type.price
 
-            orders = Order.objects.filter(booking=booking)
-            order_fees = 0
-            for order in orders:
-                order_fees += order.total
-
+            # Orders
+            order_fees = (
+                Order.objects.filter(booking=booking)
+                .exclude(status="PAID")
+                .aggregate(Sum("total"))["total__sum"]
+            )
+            # Total
             grand_total = room_fees + order_fees
+
+            # Bill
+            values = {
+                "room_fees": room_fees,
+                "order_fees": order_fees,
+                "grand_total": grand_total,
+            }
             Bill.objects.update_or_create(
                 booking=booking,
-                room_fees=room_fees,
-                order_fees=order_fees,
-                grand_total=grand_total,
+                defaults=values,
             )
         else:
             request.data["check_out"] = None

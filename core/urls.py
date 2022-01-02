@@ -2,9 +2,11 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import ListUrls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", ListUrls.as_view()),
     path("account/", include("employees.urls")),
     path("rooms/", include("rooms.urls")),
     path("guests/", include("guests.urls")),
