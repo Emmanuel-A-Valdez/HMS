@@ -17,5 +17,8 @@ class Order(models.Model):
         max_length=50, choices=ORDER_STATUS, default="OUTSTANDING"
     )
 
+    class Meta:
+        ordering = ["-date"]
+
     def __str__(self):
         return f"{self.id} - {self.booking} - {self.item}"

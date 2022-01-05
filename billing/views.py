@@ -25,19 +25,6 @@ class BillListView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AutoBillView(APIView):
-    def get(self, request, booking):
-        bill = Bill.objects.filter(booking=booking)
-        serializer = BillSerializer(bill, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, booking):
-        serializer = BillSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
 class BillView(APIView):
     def get(self, request, pk):
         room_type = get_object_or_404(Bill, pk=pk)

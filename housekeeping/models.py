@@ -14,5 +14,8 @@ class TurnDown(models.Model):
     begin = models.DateTimeField(auto_now_add=True)
     finish = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        ordering = ["-begin"]
+
     def __str__(self):
         return f"{self.id} - {self.room_number}"

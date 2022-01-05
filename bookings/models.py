@@ -18,6 +18,9 @@ class Booking(models.Model):
     checked_out = models.BooleanField(null=True, blank=True, default=False)
     booking_slug = models.SlugField(max_length=200, unique=True, null=True, blank=True)
 
+    class Meta:
+        ordering = ["-booking_date"]
+
     def save(self, *args, **kwargs):
         self.booking_slug = (
             f"Ref: {self.id} - {self.guest.first_name} {self.guest.last_name}"

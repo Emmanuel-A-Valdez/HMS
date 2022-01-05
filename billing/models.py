@@ -21,5 +21,8 @@ class Bill(models.Model):
     )
     status = models.CharField(max_length=50, choices=BILL_STATUS, default="OUTSTANDING")
 
+    class Meta:
+        ordering = ["-date"]
+
     def __str__(self):
         return f"{self.booking} {self.grand_total}"

@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rooms.models import Room, RoomType
 from rooms.serializers import RoomSerializer
+from rest_framework import permissions, status
 
 from .models import Booking
 from .serializers import BookingSerializer, CheckInSerializer, CheckOutSerializer
@@ -110,6 +111,8 @@ class BookingListView(APIView):
 
 
 class EBookingListView(APIView):
+    permission_classes = [permissions.AllowAny]
+
     def get(self, request):
         bookings = Booking.objects.select_related("guest", "room_type", "room_number")
         paginator = CustomPagination()
