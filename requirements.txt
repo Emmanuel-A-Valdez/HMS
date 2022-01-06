@@ -7,3 +7,6 @@ platformdirs==2.4.0
 PyJWT==2.2.0
 regex==2021.10.8
 sqlparse==0.4.2
+redis
+channels==3.0.4
+channels-redis==3.3.1

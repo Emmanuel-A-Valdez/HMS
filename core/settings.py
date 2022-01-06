@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "debug_toolbar",
+    "channels",
     # Project apps
     "employees",
     "rooms",
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     "items",
     "orders",
     "billing",
+    "notifications",
 ]
 
 MIDDLEWARE = [
@@ -72,6 +74,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "core.wsgi.application"
+ASGI_APPLICATION = "core.asgi.application"
 
 
 # Database
@@ -149,6 +152,16 @@ REST_FRAMEWORK = {
     ],
     "DATE_FORMAT": "%Y-%m-%d",
     "DATETIME_FORMAT": "%Y-%m-%d %H:%M:%S",
+}
+
+# Channels
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
 }
 
 # Debug Toolbar
