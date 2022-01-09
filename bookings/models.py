@@ -21,11 +21,11 @@ class Booking(models.Model):
     class Meta:
         ordering = ["-booking_date"]
 
-    def save(self, *args, **kwargs):
-        self.booking_slug = (
-            f"Ref: {self.guest.id} - {self.guest.first_name} {self.guest.last_name}"
-        )
-        super(Booking, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     self.booking_slug = (
+    #         f"Ref: {self.id} - {self.guest.first_name} {self.guest.last_name}"
+    #     )
+    #     super(Booking, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.guest.first_name} {self.guest.last_name}'s reservation."
