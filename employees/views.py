@@ -4,7 +4,6 @@ import jwt
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
-from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 
 from .models import User
@@ -12,6 +11,16 @@ from .serializers import UserSerializer
 
 
 class RegisterView(APIView):
+    """
+    {
+        "first_name": "Joe",
+        "last_name": "Henderson",
+        "username": "HMS-JH",
+        "email": "joe@test.com",
+        "password": "testing01."
+        }
+    """
+
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -20,10 +29,16 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+    """
+     {
+         "username": "HMS-JH",
+         "password": "testing01."
+    }
+    """
+
     def post(self, request):
         username = request.data["username"]
         password = request.data["password"]
-        print(request.data)
         user = User.objects.filter(username=username).first()
         if user is None:
             raise AuthenticationFailed("User not found!")
@@ -65,5 +80,5 @@ class LogoutView(APIView):
     def post(self, request):
         response = Response()
         response.delete_cookie("jwt")
-        response.data = {"message": "success"}
+        response.data = {"detail": "successfully logged out"}
         return response

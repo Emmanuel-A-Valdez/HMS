@@ -33,6 +33,14 @@ class BillView(APIView):
 
     def put(self, request, pk):
         room_type = get_object_or_404(Bill, pk=pk)
+        if request.data["status"] == "PAID":
+            booking = Booking.objects.filter(
+                booking_slug=request.data["booking"]
+            ).first()
+            orders = Order.objects.filter(booking=booking)
+            for order in orders:
+                order.status = "PAID"
+            Order.objects.bulk_update(orders, ["status"])
         serializer = BillSerializer(room_type, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()

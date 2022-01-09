@@ -5,14 +5,14 @@ from core.pagination import CustomPagination
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from guests.models import Guest
 from housekeeping.models import TurnDown
 from orders.models import Order
-from rest_framework import status
+from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rooms.models import Room, RoomType
 from rooms.serializers import RoomSerializer
-from rest_framework import permissions, status
 
 from .models import Booking
 from .serializers import BookingSerializer, CheckInSerializer, CheckOutSerializer
@@ -63,6 +63,16 @@ class RoomAvialabilityView(APIView):
 
 
 class BookingListView(APIView):
+    """
+    {
+        "guest": "Ref: 1 - Jane Smith",
+        "room_type": "Standard King",
+        "room_number": "100A",
+        "arrival": "2022-01-16",
+        "departure": "2022-01-19"
+    }
+    """
+
     def get(self, request):
         bookings = Booking.objects.select_related("guest", "room_type", "room_number")
         paginator = CustomPagination()
@@ -111,6 +121,15 @@ class BookingListView(APIView):
 
 
 class EBookingListView(APIView):
+    """
+    {
+            "guest": "Ref: 3 - Becky Luchau",
+            "room_type": "Standard King",
+            "arrival": "2022-01-16",
+            "departure": "2022-01-19"
+        }
+    """
+
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -182,6 +201,13 @@ class BookingView(APIView):
 
 
 class CheckInView(APIView):
+    """
+    {
+        "room_number": "100A",
+        "checked_in": true
+    }
+    """
+
     def get(self, request, pk):
         booking = get_object_or_404(Booking, pk=pk)
         serializer = CheckInSerializer(booking)
@@ -189,7 +215,7 @@ class CheckInView(APIView):
 
     def put(self, request, pk):
         booking = get_object_or_404(Booking, pk=pk)
-        room = Room.objects.get(room_number=request.data["room_number"])
+        room = Room.objects.filter(room_number=request.data["room_number"]).first()
 
         if request.data["checked_in"] and room.status == "Turndown":
             context = {
@@ -209,8 +235,9 @@ class CheckInView(APIView):
             request.data["check_in"] = None
             booking.checked_out = False
             booking.check_out = None
-            turndown = TurnDown.objects.filter(room_number=booking.room_number)[0]
-            turndown.delete()
+            turndown = TurnDown.objects.filter(room_number=booking.room_number).first()
+            if turndown:
+                turndown.delete()
 
         room.status = "Occupied"
         room.save()
@@ -246,10 +273,13 @@ class CheckOutView(APIView):
 
             # Days
             guest_stay = request.data["check_out"] - booking.check_in
+
             if guest_stay - timedelta(days=guest_stay.days) >= timedelta(hours=2):
                 days = guest_stay.days + 1
             else:
                 days = guest_stay.days
+            if days < 1:
+                days = 1
             room_fees = days * room.room_type.price
 
             # Orders
@@ -258,6 +288,9 @@ class CheckOutView(APIView):
                 .exclude(status="PAID")
                 .aggregate(Sum("total"))["total__sum"]
             )
+            if not order_fees:
+                order_fees = 0
+
             # Total
             grand_total = room_fees + order_fees
 
@@ -284,7 +317,7 @@ class CheckOutView(APIView):
         if not request.data["checked_out"] and room.status == "Turndown":
             room.status = "Occupied"
             room.save()
-            turndown = TurnDown.objects.filter(room_number=booking.room_number)[0]
+            turndown = TurnDown.objects.filter(room_number=booking.room_number).first()
             turndown.delete()
 
         serializer = CheckOutSerializer(booking, data=request.data)
